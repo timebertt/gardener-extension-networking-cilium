@@ -146,6 +146,7 @@ spec:
             topologyKey: kubernetes.io/hostname
       nodeSelector:
         kubernetes.io/os: linux
+        networking.shoot.gardener.cloud/provider: cilium
       tolerations:
         - operator: Exists
       volumes:

@@ -90,6 +90,7 @@ spec:
               memory: 64Mi
       nodeSelector:
         kubernetes.io/os: linux
+        networking.shoot.gardener.cloud/provider: cilium
       volumes:
       - configMap:
           defaultMode: 420

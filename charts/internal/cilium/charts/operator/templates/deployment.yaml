@@ -53,6 +53,7 @@ spec:
             topologyKey: kubernetes.io/hostname
       nodeSelector:
         kubernetes.io/os: linux
+        networking.shoot.gardener.cloud/provider: cilium
       securityContext:
         fsGroup: 1
         supplementalGroups:
