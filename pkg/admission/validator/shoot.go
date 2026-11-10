@@ -21,8 +21,9 @@ import (
 
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
+	ciliumv1alpha1helper "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1/helper"
 	ciliumvalidation "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/validation"
-	"github.com/gardener/gardener-extension-networking-cilium/pkg/controller"
+	ciliumtype "github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 )
 
 // NewShootValidator returns a new instance of a shoot validator.
@@ -77,20 +78,16 @@ func (s *shoot) validateShoot(_ context.Context, shoot *core.Shoot) error {
 		}
 
 		if shoot.Spec.Networking.ProviderConfig != nil {
-			network := &extensionsv1alpha1.Network{}
-			network.Spec.ProviderConfig = shoot.Spec.Networking.ProviderConfig
-			networkConfig, err := controller.CiliumNetworkConfigFromNetworkResource(network)
+			networkConfig, err := networkConfigFromShoot(shoot)
 			if err != nil {
-				return err
+				return providerConfigDecodeError(shoot, err)
 			}
 
-			internalNetworkConfig := &cilium.NetworkConfig{}
-			err = v1alpha1.Convert_v1alpha1_NetworkConfig_To_cilium_NetworkConfig(networkConfig, internalNetworkConfig, nil)
-			if err != nil {
-				return err
+			if networkConfig == nil {
+				return nil
 			}
 
-			if errList := ciliumvalidation.ValidateNetworkConfig(internalNetworkConfig, field.NewPath("spec", "networking", "providerConfig")); len(errList) != 0 {
+			if errList := ciliumvalidation.ValidateNetworkConfig(networkConfig, field.NewPath("spec", "networking", "providerConfig")); len(errList) != 0 {
 				return errList.ToAggregate()
 			}
 		}
@@ -100,9 +97,80 @@ func (s *shoot) validateShoot(_ context.Context, shoot *core.Shoot) error {
 }
 
 func (s *shoot) validateShootUpdate(ctx context.Context, oldShoot, shoot *core.Shoot) error {
+	if err := s.validateMigration(oldShoot, shoot); err != nil {
+		return err
+	}
+
+	// Leaving Cilium means we don't need to validate the networking Config by this Extension.
+	if networkingType(shoot) != ciliumtype.Type {
+		return nil
+	}
+
 	return s.validateShoot(ctx, shoot)
 }
 
 func (s *shoot) validateShootCreation(ctx context.Context, shoot *core.Shoot) error {
 	return s.validateShoot(ctx, shoot)
+}
+
+// validateMigration ensures that migrations to or from cilium only happen with native routing (overlay disabled),
+// as the migration strategy relies on native routing and a routing controller.
+func (s *shoot) validateMigration(oldShoot, shoot *core.Shoot) error {
+	oldIsCilium := networkingType(oldShoot) == ciliumtype.Type
+	newIsCilium := networkingType(shoot) == ciliumtype.Type
+	if oldIsCilium == newIsCilium {
+		return nil
+	}
+
+	// Leaving cilium: the old config is relevant. Entering cilium: the new one.
+	target, msg := shoot, "overlay must be explicitly disabled (overlay.enabled=false) to switch to cilium"
+	if oldIsCilium {
+		target, msg = oldShoot, "cannot switch from cilium unless the overlay is explicitly disabled, set overlay.enabled=false first"
+	}
+
+	networkConfig, err := networkConfigFromShoot(target)
+	if err != nil {
+		return providerConfigDecodeError(target, err)
+	}
+
+	// Require explicit overlay off for strictness.
+	if networkConfig == nil || networkConfig.Overlay == nil || networkConfig.Overlay.Enabled {
+		return field.ErrorList{field.Forbidden(field.NewPath("spec", "networking", "providerConfig", "overlay"), msg)}.ToAggregate()
+	}
+
+	return nil
+}
+
+func networkingType(shoot *core.Shoot) string {
+	if shoot.Spec.Networking == nil || shoot.Spec.Networking.Type == nil {
+		return ""
+	}
+	return *shoot.Spec.Networking.Type
+}
+
+// networkConfigFromShoot decodes the shoot's networking providerConfig into the internal cilium NetworkConfig.
+func networkConfigFromShoot(shoot *core.Shoot) (*cilium.NetworkConfig, error) {
+	if shoot.Spec.Networking == nil || shoot.Spec.Networking.ProviderConfig == nil || len(shoot.Spec.Networking.ProviderConfig.Raw) == 0 {
+		return nil, nil
+	}
+
+	network := &extensionsv1alpha1.Network{}
+	network.Spec.ProviderConfig = shoot.Spec.Networking.ProviderConfig
+	v1alpha1Config, err := ciliumv1alpha1helper.CiliumNetworkConfigFromNetworkResource(network)
+	if err != nil {
+		return nil, err
+	}
+
+	internalConfig := &cilium.NetworkConfig{}
+	if err := v1alpha1.Convert_v1alpha1_NetworkConfig_To_cilium_NetworkConfig(v1alpha1Config, internalConfig, nil); err != nil {
+		return nil, err
+	}
+	return internalConfig, nil
+}
+
+// providerConfigDecodeError wraps an error from decoding the shoot's networking providerConfig into a field error.
+func providerConfigDecodeError(shoot *core.Shoot, err error) error {
+	return field.ErrorList{
+		field.Invalid(field.NewPath("spec", "networking", "providerConfig"), string(shoot.Spec.Networking.ProviderConfig.Raw), err.Error()),
+	}.ToAggregate()
 }

@@ -25,6 +25,7 @@ build:
             - pkg/apis/cilium
             - pkg/apis/cilium/install
             - pkg/apis/cilium/v1alpha1
+            - pkg/apis/cilium/v1alpha1/helper
             - pkg/apis/cilium/validation
             - pkg/apis/config
             - pkg/apis/config/install

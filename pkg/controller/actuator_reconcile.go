@@ -33,6 +33,7 @@ import (
 
 	"github.com/gardener/gardener-extension-networking-cilium/charts"
 	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
+	ciliumv1alpha1helper "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1/helper"
 	chartspkg "github.com/gardener/gardener-extension-networking-cilium/pkg/charts"
 	"github.com/gardener/gardener-extension-networking-cilium/pkg/cilium"
 )
@@ -96,7 +97,7 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, network *extens
 	)
 
 	if network.Spec.ProviderConfig != nil {
-		networkConfig, err = CiliumNetworkConfigFromNetworkResource(network)
+		networkConfig, err = ciliumv1alpha1helper.CiliumNetworkConfigFromNetworkResource(network)
 		if err != nil {
 			return err
 		}
