@@ -78,6 +78,4 @@ spec:
             seccompProfile:
               type: RuntimeDefault
           restartPolicy: OnFailure
-          nodeSelector:
-            networking.shoot.gardener.cloud/provider: cilium
       ttlSecondsAfterFinished: 1800
