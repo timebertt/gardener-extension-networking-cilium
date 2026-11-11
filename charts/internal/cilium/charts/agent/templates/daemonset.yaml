@@ -627,7 +627,7 @@ spec:
 {{- end }}
       nodeSelector:
         kubernetes.io/os: linux
-        networking.shoot.gardener.cloud/provider: cilium
+        # networking.shoot.gardener.cloud/provider: cilium
       tolerations:
         - operator: Exists
       volumes:

@@ -59,6 +59,7 @@ type globalConfig struct {
 	PolicyAuditMode                     bool                                  `json:"policyAuditMode"`
 	Encryption                          encryption                            `json:"encryption"`
 	Hubble                              hubbleConfig                          `json:"hubble"`
+	IsMigratingCNI                      bool                                  `json:"isMigratingCNI"`
 }
 
 // etcd related configuration for cilium

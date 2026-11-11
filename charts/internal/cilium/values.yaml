@@ -57,7 +57,7 @@ global:
       - port-distribution
       - icmp
       - httpV2:labelsContext=source_ip,source_namespace,source_workload,destination_ip,destination_namespace,destination_workload,traffic_direction
-      port: 9091
+      port: 9092
     tls:
       enabled: true
       auto:
@@ -220,7 +220,7 @@ global:
     # This ensures no Pods can be scheduled using other CNI plugins during Cilium
     # agent downtime.
     exclusive: true
-    
+
     # -- Configure the log file for CNI logging with retention policy of 7 days.
     # Disable CNI file logging by setting this field to empty explicitly.
     logFile: "/var/run/cilium/cilium-cni.log"
@@ -345,7 +345,7 @@ global:
       # secretName is the name of the Kubernetes secret containing the ipsec encryption
       # keys
       secretName: cilium-ipsec-keys
-      
+
       # interface is the interface to use for encryption
       # interface: eth0
 
@@ -564,3 +564,5 @@ global:
     certgen: "image-repository:image-tag"
 
     kube-proxy: "image-repository:image-tag"
+
+  isMigratingCNI: false

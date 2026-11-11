@@ -1,0 +1,23 @@
+{{- if .Values.global.isMigratingCNI }}
+apiVersion: cilium.io/v2
+kind: CiliumNodeConfig
+metadata:
+  namespace: kube-system
+  name: chaining-calico
+spec:
+  nodeSelector:
+    matchExpressions:
+    - key: networking.shoot.gardener.cloud/type
+      operator: NotIn
+      values:
+      - cilium
+  defaults:
+    cni-chaining-mode: "generic-veth"
+    enable-host-legacy-routing: "true"
+    enable-local-node-route: "false"
+    enable-endpoint-health-checking: "false"
+    enable-ipv4-masquerade: "false"
+    enable-identity-mark: "false"
+    # Calico CNI config name (hard-coded)
+    cni-chaining-target: "k8s-pod-network"
+{{- end }}

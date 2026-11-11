@@ -13,6 +13,7 @@ import (
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/pkg/api/core/v1beta1/helper"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 
 	"github.com/gardener/gardener-extension-networking-cilium/imagevector"
 	ciliumv1alpha1 "github.com/gardener/gardener-extension-networking-cilium/pkg/apis/cilium/v1alpha1"
@@ -169,6 +170,7 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 
 	globalConfig.ConfigMapHash = configMapHash
 	globalConfig.ConfigMapLabelPrefixHash = configMapLabelPrefixHash
+	globalConfig.IsMigratingCNI = !apiequality.Semantic.DeepEqual(cluster.Shoot.Spec.Networking.Type, cluster.Shoot.Status.Networking.Type)
 
 	if network.Spec.PodCIDR != "" {
 		globalConfig.PodCIDR = network.Spec.PodCIDR
