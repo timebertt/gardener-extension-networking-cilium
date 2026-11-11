@@ -676,9 +676,7 @@ data:
   remove-cilium-node-taints: "true"
   set-cilium-node-taints: "true"
   set-cilium-is-up-condition: "true"
-  # TODO(timebertt): keep the previous value of 15s and only set 0 if the shoot performs a CNI migration, i.e.,
-  #  if Shoot.spec.networking.type != Shoot.status.networking.type
-  unmanaged-pod-watcher-interval: "0"
+  unmanaged-pod-watcher-interval: "15s"
   identity-management-mode: "agent"
   packetization-layer-pmtud-mode: "blackhole"
   # default DNS proxy to transparent mode in non-chaining modes
