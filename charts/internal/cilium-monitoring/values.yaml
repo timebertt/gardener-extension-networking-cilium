@@ -1,3 +1,9 @@
+ports:
+  # Overridden by the extension with cilium.AgentMetricsPort (pkg/cilium/types.go).
+  agentMetrics: 9090
+  # Overridden by the extension with cilium.HubbleMetricsPort (pkg/cilium/types.go).
+  hubbleMetrics: 9092
+
 allowedMetrics:
   # allowed metrics for cilium-agent
   ciliumAgent:

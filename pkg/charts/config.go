@@ -225,5 +225,10 @@ type encryptionWireguardStrictMode struct {
 }
 
 type hubbleConfig struct {
-	Enabled bool `json:"enabled"`
+	Enabled bool          `json:"enabled"`
+	Metrics hubbleMetrics `json:"metrics"`
+}
+
+type hubbleMetrics struct {
+	Port int `json:"port"`
 }

@@ -70,4 +70,27 @@ var _ = Describe("#generateChartValues", func() {
 			})
 		})
 	})
+
+	Describe("isMigratingCNI", func() {
+		newCluster := func(specType, statusType string) *extensions.Cluster {
+			return &extensions.Cluster{
+				Shoot: &gardencorev1beta1.Shoot{
+					Spec:   gardencorev1beta1.ShootSpec{Networking: &gardencorev1beta1.Networking{Type: &specType}},
+					Status: gardencorev1beta1.ShootStatus{Networking: &gardencorev1beta1.NetworkingStatus{Type: &statusType}},
+				},
+			}
+		}
+
+		It("should be false when spec and status networking type are equal", func() {
+			_, globalCfg, err := generateChartValues(&ciliumv1alpha1.NetworkConfig{}, &extensionsv1alpha1.Network{}, newCluster("cilium", "cilium"), "", "", "")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(globalCfg.IsMigratingCNI).To(BeFalse())
+		})
+
+		It("should be true when spec and status networking type differ", func() {
+			_, globalCfg, err := generateChartValues(&ciliumv1alpha1.NetworkConfig{}, &extensionsv1alpha1.Network{}, newCluster("cilium", "calico"), "", "", "")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(globalCfg.IsMigratingCNI).To(BeTrue())
+		})
+	})
 })

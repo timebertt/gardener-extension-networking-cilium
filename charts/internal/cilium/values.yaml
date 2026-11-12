@@ -57,6 +57,7 @@ global:
       - port-distribution
       - icmp
       - httpV2:labelsContext=source_ip,source_namespace,source_workload,destination_ip,destination_namespace,destination_workload,traffic_direction
+      # Overridden by the extension with cilium.HubbleMetricsPort.
       port: 9092
     tls:
       enabled: true
@@ -110,6 +111,7 @@ global:
   # prometheus enables
   prometheus:
     enabled: true
+    # Overridden by the extension with cilium.AgentMetricsPort.
     port: 9090
     serviceMonitor:
       enabled: false
@@ -120,6 +122,7 @@ global:
   # operatorPrometheus enables
   operatorPrometheus:
     enabled: true
+    # Overridden by the extension with cilium.OperatorMetricsPort.
     port: 6942
 
   # enableXTSocketFallback enables the fallback compatibility solution

@@ -57,5 +57,5 @@ spec:
     separator: ;
     regex: (.+)
     targetLabel: __metrics_path__
-    replacement: /api/v1/namespaces/kube-system/pods/${1}:9091/proxy/metrics
+    replacement: /api/v1/namespaces/kube-system/pods/${1}:{{ .Values.ports.hubbleMetrics }}/proxy/metrics
     action: replace

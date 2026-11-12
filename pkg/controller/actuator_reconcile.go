@@ -82,7 +82,15 @@ func applyMonitoringConfig(ctx context.Context, seedClient client.Client, chartA
 		return client.IgnoreNotFound(ciliumControlPlaneMonitoringChart.Delete(ctx, seedClient, network.Namespace))
 	}
 
-	return ciliumControlPlaneMonitoringChart.Apply(ctx, chartApplier, network.Namespace, nil, "", "", nil)
+	// The scrape configs must use the same ports the Cilium chart configures, so both take them from the constants.
+	values := map[string]any{
+		"ports": map[string]any{
+			"agentMetrics":  cilium.AgentMetricsPort,
+			"hubbleMetrics": cilium.HubbleMetricsPort,
+		},
+	}
+
+	return ciliumControlPlaneMonitoringChart.Apply(ctx, chartApplier, network.Namespace, nil, "", "", values)
 }
 
 // Reconcile implements Network.Actuator.

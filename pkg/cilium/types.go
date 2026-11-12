@@ -39,6 +39,13 @@ const (
 
 	// ReleaseName is the name of the Cilium Release.
 	ReleaseName = "cilium"
+
+	// AgentMetricsPort is the port on which the Cilium agent serves Prometheus metrics.
+	AgentMetricsPort = 9090
+	// HubbleMetricsPort is the port on which the Cilium agent serves Hubble Prometheus metrics.
+	HubbleMetricsPort = 9092
+	// OperatorMetricsPort is the port on which the Cilium operator serves Prometheus metrics.
+	OperatorMetricsPort = 6942
 )
 
 var (

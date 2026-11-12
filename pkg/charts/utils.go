@@ -59,7 +59,7 @@ var defaultGlobalConfig = globalConfig{
 	},
 	Prometheus: prometheus{
 		Enabled: true,
-		Port:    9090,
+		Port:    cilium.AgentMetricsPort,
 		ServiceMonitor: serviceMonitor{
 			Enabled: false,
 		},
@@ -69,7 +69,7 @@ var defaultGlobalConfig = globalConfig{
 	},
 	OperatorPrometheus: operatorPrometheus{
 		Enabled: true,
-		Port:    6942,
+		Port:    cilium.OperatorMetricsPort,
 	},
 	Images: map[string]string{
 		cilium.CiliumAgentImageName:    imagevector.CiliumAgentImage(),
@@ -136,6 +136,9 @@ var defaultGlobalConfig = globalConfig{
 	},
 	Hubble: hubbleConfig{
 		Enabled: false,
+		Metrics: hubbleMetrics{
+			Port: cilium.HubbleMetricsPort,
+		},
 	},
 }
 
@@ -170,7 +173,10 @@ func generateChartValues(config *ciliumv1alpha1.NetworkConfig, network *extensio
 
 	globalConfig.ConfigMapHash = configMapHash
 	globalConfig.ConfigMapLabelPrefixHash = configMapLabelPrefixHash
-	globalConfig.IsMigratingCNI = !apiequality.Semantic.DeepEqual(cluster.Shoot.Spec.Networking.Type, cluster.Shoot.Status.Networking.Type)
+
+	if cluster != nil && cluster.Shoot != nil && cluster.Shoot.Spec.Networking != nil && cluster.Shoot.Status.Networking != nil {
+		globalConfig.IsMigratingCNI = !apiequality.Semantic.DeepEqual(cluster.Shoot.Spec.Networking.Type, cluster.Shoot.Status.Networking.Type)
+	}
 
 	if network.Spec.PodCIDR != "" {
 		globalConfig.PodCIDR = network.Spec.PodCIDR
