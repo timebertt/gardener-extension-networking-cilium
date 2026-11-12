@@ -1,3 +1,4 @@
+{{- define "cilium-config.data" }}
 {{- /*  Default values with backwards compatibility */ -}}
 {{- $defaultBpfMapDynamicSizeRatio := 0.0 -}}
 {{- $defaultBpfClockProbe := "false" -}}
@@ -22,14 +23,7 @@
 {{- end -}}
 
 {{- $bpfCtTcpMax := (coalesce .Values.global.bpf.ctTcpMax $defaultBpfCtTcpMax) -}}
-{{- $bpfCtAnyMax := (coalesce .Values.global.bpf.ctAnyMax $defaultBpfCtAnyMax) -}}
-
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: cilium-config
-  namespace: {{ .Release.Namespace }}
-data:
+{{- $bpfCtAnyMax := (coalesce .Values.global.bpf.ctAnyMax $defaultBpfCtAnyMax) }}
 
   # Identity allocation mode selects how identities are shared between cilium
   # nodes by setting how they are stored. The options are "crd", "kvstore" or
@@ -738,4 +732,39 @@ data:
 {{- if hasKey .Values "blacklistConflictingRoutes" }}
   # Configure blacklisting of local routes not owned by Cilium.
   blacklist-conflicting-routes: {{ .Values.blacklistConflictingRoutes | quote }}
+{{- end }}
+{{- end }}
+
+{{- define "cilium-config.migration-overrides" }}
+# During the CNI migration, the cilium-migration DaemonSet runs on nodes that still use the previous CNI (Calico).
+# On these nodes, Cilium is chained to the Calico CNI plugin.
+cni-chaining-mode: "generic-veth"
+enable-host-legacy-routing: "true"
+enable-local-node-route: "false"
+enable-endpoint-health-checking: "false"
+enable-ipv4-masquerade: "false"
+enable-identity-mark: "false"
+# Calico CNI config name (hard-coded)
+cni-chaining-target: "k8s-pod-network"
+# Calico enforces Policies on this node, Cilium should not.
+enable-policy: "never"
+{{- end }}
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cilium-config
+  namespace: {{ .Release.Namespace }}
+data:
+{{- include "cilium-config.data" . }}
+{{- if .Values.global.isMigratingCNI }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cilium-config-migration
+  namespace: {{ .Release.Namespace }}
+data:
+{{- $data := include "cilium-config.data" . | fromYaml }}
+{{- mustMergeOverwrite $data (include "cilium-config.migration-overrides" . | fromYaml) | toYaml | nindent 2 }}
 {{- end }}

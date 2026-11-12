@@ -18,7 +18,7 @@ spec:
     protocol: TCP
     targetPort: prometheus
   selector:
-    k8s-app: cilium
+    app.kubernetes.io/name: cilium-agent
 {{- end }}
 {{- if and .Values.global.hubble.metrics.enabled }}
 ---
@@ -41,5 +41,5 @@ spec:
       protocol: TCP
       targetPort: hubble-metrics
   selector:
-    k8s-app: cilium
+    app.kubernetes.io/name: cilium-agent
 {{- end }}

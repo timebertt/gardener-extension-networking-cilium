@@ -55,6 +55,7 @@ type globalConfig struct {
 	AutoDirectNodeRoutes                bool                                  `json:"autoDirectNodeRoutes"`
 	BGPControlPlane                     bgpControlPlane                       `json:"bgpControlPlane"`
 	ConfigMapHash                       string                                `json:"configMapHash"`
+	ConfigMapMigrationHash              string                                `json:"configMapMigrationHash"`
 	ConfigMapLabelPrefixHash            string                                `json:"configMapLabelPrefixHash"`
 	PolicyAuditMode                     bool                                  `json:"policyAuditMode"`
 	Encryption                          encryption                            `json:"encryption"`
