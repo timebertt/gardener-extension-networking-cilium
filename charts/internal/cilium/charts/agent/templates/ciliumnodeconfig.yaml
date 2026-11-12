@@ -7,7 +7,7 @@ metadata:
 spec:
   nodeSelector:
     matchExpressions:
-    - key: networking.shoot.gardener.cloud/type
+    - key: networking.shoot.gardener.cloud/provider
       operator: NotIn
       values:
       - cilium
@@ -20,4 +20,6 @@ spec:
     enable-identity-mark: "false"
     # Calico CNI config name (hard-coded)
     cni-chaining-target: "k8s-pod-network"
+    # Calico enforces Policies on this node, Cilium should not.
+    enable-policy: "never"
 {{- end }}
